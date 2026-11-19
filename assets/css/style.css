@@ -1,0 +1,70 @@
+/* fonts */
+
+@font-face {
+  font-family: "garamondno8bold-italic";
+  src: url("../fonts/garamondno8-bold-italic-webfont.woff2") format("woff2"),
+    url("../fonts/garamondno8-bold-italic-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "garamondno8bold";
+  src: url("../fonts/garamondno8-bold-webfont.woff2") format("woff2"),
+    url("../fonts/garamondno8-bold-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "garamondno8italic";
+  src: url("../fonts/garamondno8-italic-webfont.woff2") format("woff2"),
+    url("../fonts/garamondno8-italic-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "garamondno8regular";
+  src: url("../fonts/garamondno8-regular-webfont.woff2") format("woff2"),
+    url("../fonts/garamondno8-regular-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* global */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 18px;
+  font-family: "garamondno8regular", serif;
+  font-size: 12.5vw;
+  line-height: 1.35;
+  overflow-y: hidden;
+  pointer-events: none;
+}
+
+#time {
+  display: flex;
+  align-items: center; /* Centers items vertically */
+  /* Optional: explicit height is required if the container isn't already tall enough */
+  height: 100vh; 
+  padding-bottom: 5vh;
+  justify-content: center;
+}
+
+i, em {
+  font-family: "garamondno8-italic";
+}
+
+.ordinary-time {
+  background-color: forestgreen;
+  color: green;
+}
