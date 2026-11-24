@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liturgical Calendar: tests</title>
+    <style>
+        body { font: 14px/1.5 -apple-system, system-ui, sans-serif; margin: 2rem; color: #222; }
+        h1 { font-size: 20px; font-weight: 500; }
+        h2 { font-size: 15px; font-weight: 500; margin-top: 2rem; }
+        #summary { font-size: 18px; margin: 1rem 0; }
+        .pass { color: #2a7a2a; }
+        .fail { color: #c0261b; font-weight: 600; }
+        table { border-collapse: collapse; }
+        td, th { padding: 2px 12px 2px 0; text-align: left; vertical-align: top; }
+        th { font-weight: 500; color: #777; }
+    </style>
+</head>
+<body>
+    <h1>Liturgical Calendar: tests</h1>
+    <p>Checks the date logic in <code>assets/js/calendar.js</code> against published dates (sources in each section). Open this page after any change to the date logic.</p>
+    <div id="summary"></div>
+    <div id="results"></div>
+
+    <script src="assets/js/calendar.js"></script>
+    <script>
+    (function () {
+        var C = LiturgicalCalendar;
+        var passed = 0, failed = 0;
+        var out = document.getElementById("results");
+
+        function iso(n) {
+            var d = C.toDate(n);
+            return d.year + "-" + String(d.month).padStart(2, "0") + "-" + String(d.day).padStart(2, "0");
+        }
+        function parts(s) {
+            var a = s.split("-");
+            return [+a[0], +a[1], +a[2]];
+        }
+
+        function section(title, note, rows) {
+            var html = "<h2>" + title + "</h2>" + (note ? "<p>" + note + "</p>" : "") +
+                "<table><tr><th></th><th>Check</th><th>Expected</th><th>Got</th></tr>";
+            rows.forEach(function (r) {
+                var ok = r.expected === r.got;
+                ok ? passed++ : failed++;
+                html += "<tr><td class='" + (ok ? "pass'>✓" : "fail'>✗") + "</td><td>" + r.label +
+                    "</td><td>" + r.expected + "</td><td" + (ok ? "" : " class='fail'") + ">" + r.got + "</td></tr>";
+            });
+            out.insertAdjacentHTML("beforeend", html + "</table>");
+        }
+
+        // 1. Easter Sunday
+        var easters = {
+            2008: "2008-03-23", 2011: "2011-04-24", 2025: "2025-04-20", 2026: "2026-04-05",
+            2027: "2027-03-28", 2028: "2028-04-16", 2029: "2029-04-01", 2030: "2030-04-21",
+            2031: "2031-04-13", 2032: "2032-03-28", 2033: "2033-04-17", 2034: "2034-04-09",
+            2035: "2035-03-25", 2038: "2038-04-25", 2285: "2285-03-22"
+        };
+        section("Easter Sunday",
+            "Published Western Easter dates, including the latest possible (Apr 25, 2038) and the earliest (Mar 22, 2285).",
+            Object.keys(easters).map(function (y) {
+                return { label: "Easter " + y, expected: easters[y], got: iso(C.easter(+y)) };
+            }));
+
+        // 2. First Sunday of Advent
+        var advents = {
+            2022: "2022-11-27", 2025: "2025-11-30", 2026: "2026-11-29",
+            2027: "2027-11-28", 2028: "2028-12-03", 2029: "2029-12-02", 2030: "2030-12-01"
+        };
+        section("First Sunday of Advent",
+            "Includes 2022 (Christmas on a Sunday, earliest possible Advent) and 2028 (latest possible Advent, per the USCCB 2028 calendar).",
+            Object.keys(advents).map(function (y) {
+                return { label: "Advent begins " + y, expected: advents[y], got: iso(C.adventStart(+y)) };
+            }));
+
+        // 3. What the page shows on specific days
+        var days = [
+            ["2026-11-24", "ordinary-time", "today, as this was written"],
+            ["2026-11-28", "ordinary-time", "day before Advent"],
+            ["2026-11-29", "advent", "Advent begins"],
+            ["2026-12-24", "advent", "Christmas Eve"],
+            ["2026-12-25", "christmas", "Christmas"],
+            ["2027-01-01", "christmas", "New Year’s Day"],
+            ["2027-01-10", "christmas", "Baptism of the Lord, last day of Christmas"],
+            ["2027-01-11", "ordinary-time", "Ordinary Time begins"],
+            ["2027-02-09", "ordinary-time", "day before Ash Wednesday"],
+            ["2027-02-10", "lent", "Ash Wednesday"],
+            ["2027-03-21", "palm-sunday", "Palm Sunday"],
+            ["2027-03-24", "lent", "Wednesday of Holy Week"],
+            ["2027-03-25", "triduum", "Holy Thursday"],
+            ["2027-03-26", "good-friday", "Good Friday"],
+            ["2027-03-27", "triduum", "Holy Saturday"],
+            ["2027-03-28", "easter", "Easter Sunday"],
+            ["2027-05-15", "easter", "day before Pentecost"],
+            ["2027-05-16", "pentecost", "Pentecost"],
+            ["2027-05-17", "ordinary-time", "Ordinary Time resumes"],
+            ["2028-01-09", "christmas", "USCCB 2028: Christmas ends Jan 9"],
+            ["2028-01-10", "ordinary-time", "USCCB 2028: Ordinary Time from Jan 10"],
+            ["2028-02-29", "ordinary-time", "leap day, last day before Lent"],
+            ["2028-03-01", "lent", "USCCB 2028: Ash Wednesday Mar 1"],
+            ["2028-04-09", "palm-sunday", "Palm Sunday 2028"],
+            ["2028-04-14", "good-friday", "Good Friday 2028"],
+            ["2028-06-04", "pentecost", "USCCB 2028: Pentecost Jun 4"],
+            ["2028-06-05", "ordinary-time", "USCCB 2028: Ordinary Time from Jun 5"],
+            ["2028-12-02", "ordinary-time", "USCCB 2028: Ordinary Time until Dec 2"],
+            ["2028-12-03", "advent", "Advent 2028"],
+            ["2029-01-07", "christmas", "Epiphany falls on Jan 7"],
+            ["2029-01-08", "christmas", "…so Baptism of the Lord is Monday, Jan 8"],
+            ["2029-01-09", "ordinary-time", "Ordinary Time from Jan 9"]
+        ];
+        section("What the page shows",
+            "Season or red day for specific dates, including the tricky ones.",
+            days.map(function (d) {
+                var p = parts(d[0]);
+                return { label: d[0] + " (" + d[2] + ")", expected: d[1], got: C.seasonFor(p[0], p[1], p[2]).key };
+            }));
+
+        // 4. Every day from 1900 to 2200: always a season, always in the right order
+        var order = ["advent", "christmas", "ordinary-time", "lent", "triduum", "easter", "ordinary-time"];
+        var start = C.dayNumber(1900, 1, 1), end = C.dayNumber(2200, 12, 31);
+        var unknown = 0, outOfOrder = 0, redCount = {}, prevSeason = null, idx = null;
+        for (var n = start; n <= end; n++) {
+            var d = C.toDate(n), key = C.seasonFor(d.year, d.month, d.day).key;
+            if (!C.NAMES[key]) { unknown++; continue; }
+            if (key === "palm-sunday") key = "lent";
+            if (key === "good-friday") key = "triduum";
+            if (key === "pentecost") { redCount[d.year] = (redCount[d.year] || 0) + 1; key = "easter"; }
+            if (key !== prevSeason) {
+                if (idx === null) { idx = order.indexOf(key); }
+                else {
+                    var next = (idx + 1) % order.length;
+                    if (order[next] !== key) outOfOrder++;
+                    idx = next;
+                }
+                prevSeason = key;
+            }
+        }
+        var years = 2200 - 1900 + 1, pentecostsOk = 0;
+        for (var y = 1900; y <= 2200; y++) if (redCount[y] === 1) pentecostsOk++;
+        section("Every day, 1900–2200",
+            "All " + (end - start + 1).toLocaleString() + " days are checked.",
+            [
+                { label: "Days with no season", expected: "0", got: String(unknown) },
+                { label: "Times a season came out of order", expected: "0", got: String(outOfOrder) },
+                { label: "Years with exactly one Pentecost", expected: String(years), got: String(pentecostsOk) }
+            ]);
+
+        var s = document.getElementById("summary");
+        s.className = failed ? "fail" : "pass";
+        s.textContent = failed ? failed + " failed, " + passed + " passed" : "All " + passed + " checks passed";
+        document.title = (failed ? "✗ " : "✓ ") + document.title;
+    })();
+    </script>
+</body>
+</html>

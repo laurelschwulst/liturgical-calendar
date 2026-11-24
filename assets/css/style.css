@@ -61,10 +61,86 @@ body {
 }
 
 i, em {
-  font-family: "garamondno8-italic";
+  font-family: "garamondno8italic", serif;
+  font-style: normal; /* the webfont is already italic */
+}
+
+/* fade
+   Turned on by script.js (body.can-fade) only after the first paint,
+   so the page never fades on load, only at midnight. */
+
+body.can-fade {
+  transition: background-color 60s linear, color 60s linear;
+}
+
+/* seasons
+   Tone-on-tone: background, then slightly lighter (or gray) text.
+   Colors are listed in README.md. */
+
+.advent {
+  background-color: #73137a;
+  color: #8c2a93;
+}
+
+.christmas {
+  background-color: #ffffff;
+  color: #d4d4d4;
 }
 
 .ordinary-time {
   background-color: forestgreen;
   color: green;
+}
+
+.lent {
+  background-color: #73137a;
+  color: #8c2a93;
+}
+
+.triduum {
+  background-color: #d3a24c;
+  color: #b8873a;
+}
+
+.easter {
+  background-color: #ffffff;
+  color: #cfcfcf;
+}
+
+/* red days (one day each) */
+
+.palm-sunday,
+.good-friday,
+.pentecost {
+  background-color: #941d14;
+  color: #ab271f;
+}
+
+/* testing easter egg: dot (top right) with an invisible <select> on top */
+
+#tester {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  pointer-events: auto; /* the rest of the page ignores clicks */
+}
+
+#dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: currentColor; /* same color as the season name */
+}
+
+#menu {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;       /* invisible, but still clickable */
+  cursor: pointer;
+  font-size: 16px;  /* keeps iOS from zooming in when it opens */
 }

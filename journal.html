@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding &amp; prompt journal — Liturgical Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet">
+    <style>
+        /*
+         * Styles from Celine Nguyen's prompt journal
+         * (calendar.celinenguyen.com/debug/prompt-journal), used with credit.
+         * Her site is built with Tailwind; the utility classes it uses are
+         * written out here as plain CSS, and the parts this page doesn't use
+         * (images, favorites, editing) are left out.
+         */
+
+        :root {
+            --background: #ffffff;
+            --foreground: #0a0a0a;
+            --muted-foreground: #737373;
+            --border: #e5e5e5;
+            --terracotta: #AB5336;
+            --font-newsreader: "Newsreader", Georgia, serif;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: "Inconsolata", ui-monospace, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            background: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-newsreader);
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+        button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+        a { color: inherit; text-decoration: none; }
+
+        /* layout: day list on the left, the day on the right */
+        .layout { display: flex; flex-direction: column; flex: 1; min-height: 0; font-family: var(--font-ui); }
+        nav { display: flex; flex-direction: column; flex-shrink: 0; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid var(--border); }
+        main { flex: 1; min-width: 0; }
+        @media (min-width: 768px) {
+            .layout { flex-direction: row; }
+            nav { width: 18rem; height: 100dvh; overflow-y: auto; border-bottom: 0; border-right: 1px solid var(--border); }
+            main { height: 100dvh; overflow-y: auto; }
+        }
+
+        .nav-head { display: flex; flex-direction: column; gap: .25rem; }
+        .nav-title { font-family: var(--font-newsreader); font-size: 1.25rem; line-height: 1.75rem; font-style: italic; }
+        .nav-meta { font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); }
+        nav ul { display: flex; flex-direction: column; list-style: none; }
+        nav a {
+            display: flex; flex-direction: column; gap: .125rem;
+            margin: 0 -.75rem; padding: .5rem .75rem; border-radius: 9px;
+            transition: background-color 150ms;
+        }
+        nav a:hover { background: color-mix(in srgb, currentColor 4%, transparent); }
+        nav a .label { font-size: .875rem; line-height: 1.25rem; }
+        nav a .count { font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); }
+        nav a.current { background: color-mix(in srgb, var(--terracotta) 8%, transparent); }
+        nav a.current .label { color: var(--terracotta); }
+        nav a.back { margin: auto 0 0; padding: 0; font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); }
+        nav a.back:hover { background: none; text-decoration-line: underline; }
+
+        /* the day */
+        .pj-day { --pj-gutter: 1.5rem; display: flex; flex-direction: column; padding-bottom: 4rem; }
+        @media (min-width: 768px) { .pj-day { --pj-gutter: 4rem; } }
+        .pj-gutter { padding-inline: var(--pj-gutter); }
+        .day-header { display: flex; flex-direction: column; gap: .25rem; padding-top: 2rem; padding-bottom: 2rem; }
+        @media (min-width: 768px) { .day-header { padding-top: 2.5rem; } }
+        .day-header h1 { font-family: var(--font-newsreader); font-size: 1.875rem; line-height: 2.25rem; font-style: italic; font-weight: 400; }
+        .day-header p { font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
+
+        /* one entry */
+        .pj-day[hidden] { display: none; }
+        .pj-entry { border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+        .pj-head {
+            position: sticky; top: 0; z-index: 2;
+            display: flex; align-items: baseline; gap: .75rem;
+            padding: 1.75rem var(--pj-gutter) 1.25rem;
+            background: var(--background);
+            container-type: scroll-state;
+            cursor: pointer;
+            font-family: var(--font-newsreader); font-size: 1.375rem; line-height: 1.3;
+        }
+        .pj-head-rule {
+            position: absolute; inset: auto 0 0 0; height: 1px;
+            background: color-mix(in srgb, currentColor 10%, transparent);
+            opacity: 0;
+        }
+        @container scroll-state(stuck: top) { .pj-head-rule { opacity: 1; } }
+        .pj-entry:not([data-open]) .pj-head { padding-bottom: 1.75rem; }
+        .pj-number {
+            flex-shrink: 0; min-width: 1.25ch;
+            font-variant-numeric: tabular-nums;
+            color: var(--muted-foreground);
+        }
+        @media (min-width: 768px) {
+            .pj-number { position: absolute; right: calc(100% - var(--pj-gutter) + .75rem); text-align: right; }
+        }
+        .pj-title { position: relative; flex: 1; font-size: inherit; font-weight: 400; text-wrap: pretty; }
+        .pj-title code { font-size: .8em; }
+        .pj-chevron {
+            display: inline-grid; place-items: center;
+            width: 1.5rem; height: 1.5rem; margin-left: .25rem; vertical-align: -.2em;
+            color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+            opacity: 0; transition: opacity 150ms;
+        }
+        .pj-chevron svg { width: 1rem; height: 1rem; }
+        .pj-toggle-bar { transform-origin: center; transform-box: fill-box; transition: transform 200ms ease; }
+        .pj-entry[data-open] .pj-toggle-bar { transform: scaleY(0); }
+        .pj-head:hover .pj-chevron, .pj-chevron:focus-visible { opacity: 1; }
+        .pj-entry:not([data-open]) .pj { display: none; }
+
+        /* an entry's body */
+        .pj { display: flex; flex-direction: column; min-width: 0; padding-bottom: 2.5rem; }
+        .pj * { min-width: 0; }
+        .pj p { margin: .85rem 0; max-width: 68ch; line-height: 1.55; overflow-wrap: anywhere; }
+        .pj-prompt {
+            padding: 1.25rem 1.5rem; border-radius: 9px;
+            background: color-mix(in srgb, currentColor 5%, transparent);
+        }
+        .pj-prompt blockquote p { margin: .7rem 0; max-width: 64ch; }
+        .pj-prompt blockquote > :first-child { margin-top: 0; }
+        .pj-prompt blockquote > :last-child { margin-bottom: 0; }
+        .pj section { margin-top: 2rem; }
+        .pj h3 {
+            font-family: var(--font-newsreader); font-size: 1.25rem; font-style: italic; font-weight: 400;
+            line-height: 1.2; margin: 0 0 .25rem;
+        }
+        .pj section > div > :first-child { margin-top: 0; }
+        .pj-count { margin-left: .5rem; color: var(--muted-foreground); white-space: nowrap; }
+        .pj .pj-thumbs { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+        .pj-thumbs a { display: block; cursor: zoom-in; border-radius: 2px; }
+        .pj-thumbs img {
+            display: block; height: 7.5rem; width: auto; max-width: 16rem;
+            object-fit: cover; object-position: top;
+            border-radius: 2px; outline: 1px solid rgb(0 0 0 / .1); outline-offset: -1px;
+            transition: opacity 150ms;
+        }
+        .pj-thumbs a:hover img, .pj-thumbs a:focus-visible img { opacity: .85; }
+        .pj a { text-decoration-line: underline; text-decoration-style: solid; }
+        .pj a:hover, .pj a:active { color: var(--terracotta); }
+        .pj code { font-family: var(--font-mono); font-size: .9em; }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <nav>
+        <div class="nav-head">
+            <p class="nav-title">Coding &amp; prompt journal</p>
+            <p class="nav-meta">24 prompts · 2 days</p>
+        </div>
+        <ul>
+            <li><a href="#2026-11-19"><span class="label">November 19, 2026</span><span class="count">coding</span></a></li>
+            <li><a href="#2026-11-24"><span class="label">November 24, 2026</span><span class="count">coding • 24 prompts</span></a></li>
+        </ul>
+        <a class="back" href="./">Liturgical Calendar</a>
+    </nav>
+
+    <main>
+        <article class="pj-day" id="2026-11-19">
+            <header class="day-header pj-gutter">
+                <h1>November 19, 2026</h1>
+                <p>coding</p>
+            </header>
+
+            <div class="pj-entry" data-open="true">
+                <div class="pj-head" style="cursor: default">
+                    <span class="pj-number"></span>
+                    <h2 class="pj-title"><span class="pj-title-text">Setting up the site</span></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div class="pj pj-gutter">
+                    <section style="margin-top: 0"><h3>Summary</h3><div>
+                        <p>Laurel set up a simple static website to translate the Ordinary Time <a href="https://www.figma.com/design/9tyZIoC5uIjQ4JqELE00Vr/Laurel--Demo-?node-id=0-1&amp;t=JIz9q4cht8xMzHRp-1" target="_blank">sketch from Figma</a> into a responsive page: a single <code>index.html</code> showing <i>Ordinary Time</i> in Garamond No. 8 italic, centered on the screen, on a <code>forestgreen</code> background with <code>green</code> text.</p>
+                        <p>The type is sized in viewport units (<code>12.5vw</code>), so the phrase scales with the window instead of breaking at fixed sizes. The page doesn't scroll and ignores clicks: it's for looking at.</p>
+                        <p>The fonts are self-hosted, and jQuery and an empty <code>script.js</code> were ready for the logic to come. The first commit, "up", was pushed to GitHub (<code>laurelschwulst/liturgical-calendar</code>) at 2:45 pm.</p>
+                    </div></section>
+                </div>
+            </div>
+        </article>
+
+        <article class="pj-day" id="2026-11-24">
+            <header class="day-header pj-gutter">
+                <h1>November 24, 2026</h1>
+                <p>coding • 24 prompts</p>
+            </header>
+
+            <div id="prompt-1" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">1</span>
+                    <h2 class="pj-title"><span class="pj-title-text">A README before any code</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-1-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-1-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>hi there, i'm working on my liturgical clock project. i'd like to, before doing any coding work, to type up a clear readme.md or agents file to discuss the project parameters with you. once we're clear on them, we can go forward and write some code together</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The folder had a small start: one page showing <i>Ordinary Time</i> in large Garamond italic on green, a stylesheet, an empty script and self-hosted fonts. I drafted a README from what was already there, and listed every undecided choice as an open question.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>I tried not to make decisions in the draft. I also noticed that the italic font never loaded because of a name mismatch in the CSS, and recorded it as a known issue instead of fixing it before coding started.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-2" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">2</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Episcopal/Lutheran, and a chart of colors</span><span class="pj-count">1 image</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-2-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-2-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>hi, can we do Episcopal/Lutheran, and i'd like you to show me a chart of all the major seasons and their associated colors. i've done a simple sketch here of some seasons etc.</p></blockquote><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-season-sketch.png" target="_blank"><img src="assets/images/2026-11-24-season-sketch.png" alt="Laurel’s sketch: Ordinary Time, Easter, Triduum, Advent and Pentecost as color swatches with tone-on-tone italic names"></a></li></ul></div>
+                    <section><h3>Context from Claude</h3><div><p>Laurel shared a sketch of five swatches (Ordinary Time, Easter, Triduum, Advent, Pentecost), each with its name in tone-on-tone italic. I drew the whole 2026–27 church year in those colors, with a strip showing each season's length.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The chart raised that these traditions don't say "Ordinary Time". They call it the Season after Epiphany or after Pentecost. That turned out to matter a lot.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-3" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">3</span>
+                    <h2 class="pj-title"><span class="pj-title-text">The same, as a table</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-3-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-3-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>can you give me these without images but include the colors in a table</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I put each season's dates, length, liturgical color and background and text color codes in a table, plus the white and red feast days that fall in the green seasons.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The table made the color codes easy to copy, and later they went straight into the stylesheet.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-4" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">4</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Switching to the Roman Catholic calendar</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-4-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-4-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>can we also go to Catholic/Roman becuse i want to include ordinary time thanks</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The name "Ordinary Time" decided the tradition. I redid the dates for the Catholic year and updated the README.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The Catholic version changes a few things: Christmas runs through the Baptism of the Lord, Holy Week is part of Lent, and rose appears on Gaudete and Laetare Sundays.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-5" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">5</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Simpler, but still accurate</span><span class="pj-count">1 image</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-5-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-5-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>can you show me the images of the times again? also i'm wondering if we might be able to do a simplified calendar for now, because all the details are a little overwhelming... but i don't want to be inaccurate...</p></blockquote><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-calendar-wheel.png" target="_blank"><img src="assets/images/2026-11-24-calendar-wheel.png" alt="A wheel diagram of the liturgical year with seven seasons: Advent, Christmas, Ordinary Time, Lent, Triduum, Easter, Ordinary Time"></a></li></ul></div>
+                    <section><h3>Context from Claude</h3><div><p>Laurel shared a wheel diagram of the year with seven seasons. I showed those seven as swatches and wrote the start and end rules into the README.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The key idea: naming the <em>season</em> is always accurate. Feast-day colors are a separate layer on top. Gold for the Triduum is a design choice, since its real colors change each day.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-6" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">6</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Where red fits</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-6-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-6-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>if we did have any red, for example for pentecost, when would we integrate that? and what other holidays might be red that would be important to include?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I suggested treating red days as one-day exceptions on top of the seasons. Palm Sunday, Good Friday and Pentecost are the big three, and all come from the Easter date. Fixed-date red feasts, such as the Holy Cross on Sept 14 and St. Stephen on Dec 26, could come later.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>Treating red days as exceptions keeps the seasons simple, and it could later also cover rose and the white feast days.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-7" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">7</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Seven seasons plus three red days</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-7-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-7-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>can you show me these 3 red holidays in addition to the simplified 7?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I drew the seven seasons with the three red days as thin slivers in the year strip, and as their own swatches below.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>Seeing the red days inside Lent, the Triduum and Easter made it clear they interrupt a season rather than replace it.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-8" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">8</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Are the reds the same?</span><span class="pj-count">1 image</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-8-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-8-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>are the reds the same color? my red looks a bit brighter on screen...</p></blockquote><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-pentecost-red.png" target="_blank"><img src="assets/images/2026-11-24-pentecost-red.png" alt="Laurel’s Pentecost swatch: tone-on-tone red with the word Pentecost in italic"></a></li></ul></div>
+                    <section><h3>Context from Claude</h3><div><p>I measured the colors in Laurel's screenshot: <code>#941d14</code> against my <code>#911d14</code>, a difference too small to see.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The difference came from the surroundings: a dark frame and a big swatch make a color look brighter. I used Laurel's measured red from then on.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-9" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">9</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Confirming the palette</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-9-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-9-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>ok thanks. alright, i like these 7 simplified seasons - 2 are purple (advent, lent), 2 are white/gray (christmas, easter), one is gold (triduum), and then we have 2 green (ordinary times). then we have 3 one day red holidays (palm sunday, good friday, pentecost). is that right?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>That was right. The one detail: Good Friday falls inside the Triduum, so the Triduum goes gold, then red, then gold.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>I wrote the final palette into the README, with a color code and date rule for each entry.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-10" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">10</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Text, time, jQuery, and a name</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-10-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-10-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>text - yes only season or holiday name. time, let's do viewer's local time. let's keep using jquery. and let's call it liturgical calendar for now because it's more about the year</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>Four decisions answered at once. The project became <i>Liturgical Calendar</i>, matching the GitHub repo name.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>"More about the year" is a good reason for the name: the page shows a position in the year, not an hour.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-11" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">11</span>
+                    <h2 class="pj-title"><span class="pj-title-text">A slow fade at midnight</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-11-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-11-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>for midnight update, would it be possible to have a slow fade between colors for 30 seconds or 1 minute? yes let's use the US calendar. it will be hosted on github pages. and i agree with your suggestion about calculating the dates each year, is that right?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>We settled on a 60-second fade of the colors, with the name fading out and back in partway through, and no fade when the page first opens. All dates are calculated from Easter, using US rules.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The fade only happens if the page is open at midnight, so it's a small reward for anyone who leaves it open.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-12" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">12</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Is it right in 2028?</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-12-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-12-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>how can we ensure it's correct in 2028?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I ran the formulas for 2028 and compared them with the USCCB's official 2028 calendar. Every date matched, including Ash Wednesday on March 1, right after the leap day.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>This led to the test page: published dates, the tricky years (the 2028 leap day, and 2029, when Christmas ends on a Monday) and a check of every day for three centuries.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-13" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">13</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Ready to code?</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-13-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-13-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks. i think we're ready to code, what do you think?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I agreed and proposed six steps, starting with the italic font fix and the season colors.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>I also flagged that the computer was too low on disk space for me to run commands there, which shaped how the rest of the work happened.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-14" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">14</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Steps 1 and 2</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-14-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-14-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>yes start w steps 1 and 2 thanks</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I fixed the italic font name, added a class for each season and red day, and made <code>preview.html</code>, which shows every season full-screen.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>I checked in a test browser that the real italic now loads. I also replaced the original green without saying so. See prompt 16.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-15" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">15</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Running it locally</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-15-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-15-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>can we boot it locally?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>Since I couldn't run commands on Laurel's computer, I gave the one-line Terminal command: <code>python3 -m http.server 8000</code>.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>Once the server was running, I could open the page in the app's browser pane too, which helped later.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-16" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">16</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Did the greens change?</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-16-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-16-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>just checking - did you change the green colors for ordinary time from my original?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>Yes. I had swapped <code>forestgreen</code>/<code>green</code> for colors estimated from the sketch and didn't mention it.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>That was my mistake. Changing something someone chose on purpose should always be said out loud.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-17" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">17</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Back to the original green</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-17-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-17-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>i'd like to revert the green to my original pls</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I restored <code>forestgreen</code> for the background and <code>green</code> for the text, in both the stylesheet and the README.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The other season colors still come from my by-eye estimates of the sketch, and I said so.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-18" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">18</span>
+                    <h2 class="pj-title"><span class="pj-title-text">The date logic</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-18-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-18-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks appreciate it. let's continue onto the next steps</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I wrote <code>calendar.js</code> (Easter, the seven seasons, the three red days, the US Epiphany rule) and <code>script.js</code> (the <code>?date=</code> setting, the midnight fade), plus <code>test.html</code>. All 57 checks passed.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>Keeping the date math separate from the page code is what makes the test page possible.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-19" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">19</span>
+                    <h2 class="pj-title"><span class="pj-title-text">An empty live site</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-19-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-19-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>right now the screen is empty on my live site</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The live site was still the first version: nothing from today had been committed or pushed. I gave the commands, using <code>git add -A</code> so the new files would be included.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>A push missing the new <code>calendar.js</code> would produce exactly an empty page, so the command matters.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-20" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">20</span>
+                    <h2 class="pj-title"><span class="pj-title-text">A dot as a testing easter egg</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-20-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-20-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>i was wondering if we could put a tiny circle (maybe the size of a bullet, approx 10 or 12px wide and tall) which is the same color as the text in the upper right. when you click on it, a simple html nave dropdown appears that let's us test the calendar at different times. in the dropdown displays the date range and the name of the season. it's kind of like a testing easter egg</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I built a 12px dot that opened a small custom menu listing every season of the church year, each linking to its first day.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>I misread "simple html dropdown" as a custom menu. A native <code>&lt;select&gt;</code> was what was meant (prompt 23). The dot also came out black at first, because buttons don't take the page's text color.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-21" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">21</span>
+                    <h2 class="pj-title"><span class="pj-title-text">20px from the edges</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-21-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-21-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>it should have about 20px of padding from the top and right sides of the screen</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>This arrived while I was building, so I set the dot 20px from the top and right edges.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The main page's margin is 18px, so 20px puts the dot just inside it.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-22" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">22</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Inverted greens?</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-22-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-22-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>hi somehow the green colors got inversed for ordinary time. the background should be the forestgreen, and text and bullet green</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The stylesheet and the page on the local server both showed <code>forestgreen</code> as the background and <code>green</code> as the text and dot, as intended.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p><code>forestgreen</code> is actually lighter than <code>green</code>, so the text is darker than the background. That's the reverse of the other seasons, which may be why it looked inverted.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-23" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">23</span>
+                    <h2 class="pj-title"><span class="pj-title-text">A native &lt;select&gt;</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-23-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-23-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>hi, i asked previously if the dropdown could be a native html &lt;select&gt; dropdown instead... is it possible? the format for each row can be like "Advent ... Nov 30 – Dec 4". and i do like the last item being "Today." not sure yet how to switch between years but let's try this first</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>I replaced the custom menu with a real <code>&lt;select&gt;</code>, invisible and placed over the dot, so clicking the dot opens the browser's own dropdown. Each row reads like "Advent ... Nov 30 – Dec 24", and the last one is "Today".</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>An invisible <code>&lt;select&gt;</code> works the same everywhere, including the native picker on phones. Switching between years is still open.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-24" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">24</span>
+                    <h2 class="pj-title"><span class="pj-title-text">This page</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-24-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-24-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>also, would it be possible to create a new page called prompt-journal.html that essentially uses this format (https://calendar.celinenguyen.com/debug/prompt-journal/2026-10-01) from celine nguyen and transfers all of these prompts from our chat today into it? and removes celine's content of course</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>This page follows the structure of Celine Nguyen's prompt journal: a list of days, then numbered prompts, each with a title, the prompt as a quote, and notes. All the content here is from today.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>The prompts are quoted exactly as written, typos included. The screenshots shared with prompts 2, 5 and 8 appear with them.</p></div></section>
+                </div>
+            </div>
+
+        </article>
+    </main>
+
+</div>
+
+<script>
+    // one day at a time, chosen from the sidebar; the latest day by default
+    function showDay() {
+        var days = document.querySelectorAll(".pj-day");
+        var id = location.hash.slice(1);
+        if (!document.getElementById(id)) id = days[days.length - 1].id;
+        days.forEach(function (day) { day.hidden = day.id !== id; });
+        document.querySelectorAll("nav a[href^='#']").forEach(function (a) {
+            a.classList.toggle("current", a.getAttribute("href") === "#" + id);
+        });
+        document.querySelector("main").scrollTop = 0;
+    }
+    window.addEventListener("hashchange", showDay);
+    showDay();
+
+    // open and close an entry by clicking its heading
+    document.querySelectorAll(".pj-head").forEach(function (head) {
+        head.addEventListener("click", function () {
+            var button = head.querySelector(".pj-chevron");
+            if (!button) return;   // the summary has no button and stays open
+            var entry = head.closest(".pj-entry");
+            var open = entry.toggleAttribute("data-open");
+            button.setAttribute("aria-expanded", open);
+            button.setAttribute("aria-label", open ? "Collapse" : "Expand");
+        });
+    });
+</script>
+</body>
+</html>

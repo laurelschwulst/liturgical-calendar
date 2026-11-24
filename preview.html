@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liturgical Calendar: preview</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* preview only: undo the main page's no-scroll, full-screen setup */
+        body {
+            margin: 0;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+        section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 5vh;
+        }
+    </style>
+</head>
+<body>
+    <!-- One full-screen section per look, in the order of the year. Scroll to see each. -->
+    <section class="advent"><i>Advent</i></section>
+    <section class="christmas"><i>Christmas</i></section>
+    <section class="ordinary-time"><i>Ordinary Time</i></section>
+    <section class="lent"><i>Lent</i></section>
+    <section class="palm-sunday"><i>Palm Sunday</i></section>
+    <section class="triduum"><i>Triduum</i></section>
+    <section class="good-friday"><i>Good Friday</i></section>
+    <section class="easter"><i>Easter</i></section>
+    <section class="pentecost"><i>Pentecost</i></section>
+    <section class="ordinary-time"><i>Ordinary Time</i></section>
+</body>
+</html>

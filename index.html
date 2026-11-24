@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liturgical Clock</title>
+    <title>Liturgical Calendar</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="ordinary-time">
+<body>
+    <!-- script.js fills in the season and sets its class on <body> -->
     <div id="time">
-        <i>Ordinary Time</i>
+        <i></i>
     </div>
+
+    <!-- testing easter egg: a small dot, top right. An invisible <select>
+         sits on top of it, so clicking the dot opens the native dropdown. -->
+    <div id="tester">
+        <span id="dot"></span>
+        <select id="menu" aria-label="Test other dates"></select>
+    </div>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/calendar.js"></script>
+    <script src="assets/js/script.js"></script>
 </body>
-<script src="assets/js/jquery.min.js"></script>
-<script src="assets/js/script.js"></script>
 </html>
