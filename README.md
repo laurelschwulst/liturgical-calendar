@@ -150,9 +150,9 @@ The season's key is set as a class on `<body>` (`advent`, `christmas`, `ordinary
   - first row (not choosable): the date being viewed, e.g. "Viewing Tue, Nov 24, 2026 (today)"
   - "← 2024–25": jumps to the start of the previous church year
   - "----- 2025 -----" dividers where the calendar year changes (not choosable)
-  - every season and red day, e.g. "Advent ... Nov 30 – Dec 24"; the one being viewed is selected and marked with "•"; choosing one goes to its first day (`?date=`)
-  - "2026–27 →": jumps to the next church year
-  - "Today": back to the real date
+  - every season and red day, e.g. "Advent ... Nov 30 – Dec 24"; the one being viewed is selected; choosing one goes to its first day (`?date=`)
+  - a plain "----------------" divider, then "→ 2026–27": jumps to the next church year
+  - "→ Today": back to the real date
 - **`?date=YYYY-MM-DD&next`**: shows that date, then after 5 seconds plays the 60-second midnight fade to the next day, e.g. `index.html?date=2026-11-28&next` (Ordinary Time → Advent).
 
 ## Known issues

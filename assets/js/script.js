@@ -80,6 +80,9 @@ $(function () {
     return WEEKDAYS[new Date(n * 864e5).getUTCDay()] + ", " + MONTHS[d.month - 1] + " " + d.day + ", " + d.year;
   }
 
+  // plain divider before the next-year row
+  var DIVIDER = "----------------";
+
   function churchYear(startYear) {
     return startYear + "–" + String(startYear + 1).slice(2);   // e.g. 2025–26
   }
@@ -89,12 +92,13 @@ $(function () {
   //
   //   Viewing Tue, Nov 24, 2026 (today)      ← not choosable
   //   ← 2024–25
-  //   ----- 2025 -----                        ← not choosable
+  //   ----- 2025 -----                        ← year divider, not choosable
   //   Advent ... Nov 30 – Dec 24
   //   ...
-  //   Ordinary Time ... May 25 – Nov 28  •    ← the season being viewed
-  //   2026–27 →
-  //   Today
+  //   Ordinary Time ... May 25 – Nov 28      ← the season being viewed (selected)
+  //   ----------------                        ← plain divider, not choosable
+  //   → 2026–27
+  //   → Today
   //
   // Each choosable option's value is a date to go to; "Today" has no value.
   function buildMenu(date) {
@@ -132,12 +136,13 @@ $(function () {
       }
       var current = n >= r.start && n <= r.end;
       var range = r.start === r.end ? shortDate(r.start) : shortDate(r.start) + " – " + shortDate(r.end);
-      option(r.name + " ... " + range + (current ? "  •" : ""), isoDate(r.start))
+      option(r.name + " ... " + range, isoDate(r.start))
         .prop("selected", current);
     });
 
-    option(churchYear(startYear + 1) + " →", isoDate(next));
-    option("Today", "");
+    option(DIVIDER, "", true);
+    option("→ " + churchYear(startYear + 1), isoDate(next));
+    option("→ Today", "");
   }
 
   // choosing an option goes to that date (or back to today)
