@@ -26,12 +26,11 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Two jobs, like GitHub's own Pages template: the second publishes only
+# after the first has finished uploading, so GitHub has the files ready.
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Point the link preview at today's season
@@ -40,5 +39,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
