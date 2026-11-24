@@ -148,6 +148,38 @@
         .pj-thumbs a:hover img, .pj-thumbs a:focus-visible img { opacity: .85; }
         .pj a { text-decoration-line: underline; text-decoration-style: solid; }
         .pj a:hover, .pj a:active { color: var(--terracotta); }
+        .pj table { display: block; overflow-x: auto; margin: .85rem 0; border-collapse: collapse; width: 100%; font-size: .9rem; }
+        .pj th, .pj td {
+            border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+            padding: .45rem .7rem .45rem 0; text-align: left; vertical-align: top;
+        }
+        .pj th { font-weight: 500; }
+        .pj td:has(.swatch) { white-space: nowrap; }
+        .swatch {
+            display: inline-block; width: .8em; height: .8em; margin-right: .35em; vertical-align: -.05em;
+            border-radius: 2px; outline: 1px solid rgb(0 0 0 / .15); outline-offset: -1px;
+        }
+        .pj-lightbox {
+            width: 100vw; height: 100dvh; max-width: none; max-height: none;
+            margin: 0; padding: 0; background: transparent; border: 0; overflow: hidden;
+        }
+        .pj-lightbox::backdrop { background: rgb(0 0 0 / .85); }
+        .pj-lightbox:focus { outline: none; }
+        .pj-lightbox-frame {
+            display: grid; grid-template-rows: minmax(0, 1fr) 3rem;
+            justify-items: center; align-items: center;
+            height: 100%; padding: 1.5rem 1.5rem 0; cursor: zoom-out;
+        }
+        .pj-lightbox-frame img {
+            display: block; max-width: min(92vw, 100%); max-height: 100%; width: auto; height: auto;
+            border-radius: 2px; outline: 1px solid rgb(0 0 0 / .1); outline-offset: -1px;
+            animation: pj-fade 120ms ease-out;
+        }
+        @keyframes pj-fade { from { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .pj-lightbox-frame img { animation: none; } }
+        .pj-lightbox-bar { grid-row: 2; display: flex; align-items: center; color: white; font-family: var(--font-ui); font-size: .875rem; }
+        .pj-lightbox-bar button { padding: .25rem .5rem; opacity: .8; }
+        .pj-lightbox-bar button:hover, .pj-lightbox-bar button:focus-visible { opacity: 1; text-decoration: underline; }
         .pj code { font-family: var(--font-mono); font-size: .9em; }
     </style>
 </head>
@@ -215,7 +247,7 @@
                 </div>
                 <div id="prompt-2-body" class="pj pj-gutter">
                     <div class="pj-prompt"><blockquote><p>hi, can we do Episcopal/Lutheran, and i'd like you to show me a chart of all the major seasons and their associated colors. i've done a simple sketch here of some seasons etc.</p></blockquote><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-season-sketch.png" target="_blank"><img src="assets/images/2026-11-24-season-sketch.png" alt="Laurel’s sketch: Ordinary Time, Easter, Triduum, Advent and Pentecost as color swatches with tone-on-tone italic names"></a></li></ul></div>
-                    <section><h3>Context from Claude</h3><div><p>Laurel shared a sketch of five swatches (Ordinary Time, Easter, Triduum, Advent, Pentecost), each with its name in tone-on-tone italic. I drew the whole 2026–27 church year in those colors, with a strip showing each season's length.</p></div></section>
+                    <section><h3>Context from Claude</h3><div><p>Laurel shared a sketch of five swatches (Ordinary Time, Easter, Triduum, Advent, Pentecost), each with its name in tone-on-tone italic. I drew the whole 2026–27 church year in those colors, with a strip showing each season's length.</p><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-chart-episcopal-lutheran.png" target="_blank"><img src="assets/images/2026-11-24-chart-episcopal-lutheran.png" alt="Claude’s chart of the 2026–27 Episcopal/Lutheran year: a strip showing each season’s length, and a swatch for each season with its dates and color"></a></li></ul></div></section>
                     <section><h3>Notes from Claude</h3><div><p>The chart raised that these traditions don't say "Ordinary Time". They call it the Season after Epiphany or after Pentecost. That turned out to matter a lot.</p></div></section>
                 </div>
             </div>
@@ -227,7 +259,7 @@
                 </div>
                 <div id="prompt-3-body" class="pj pj-gutter">
                     <div class="pj-prompt"><blockquote><p>can you give me these without images but include the colors in a table</p></blockquote></div>
-                    <section><h3>Context from Claude</h3><div><p>I put each season's dates, length, liturgical color and background and text color codes in a table, plus the white and red feast days that fall in the green seasons.</p></div></section>
+                    <section><h3>Context from Claude</h3><div><p>I put each season's dates, length, liturgical color and background and text color codes in a table, plus the white and red feast days that fall in the green seasons.</p><table><thead><tr><th>Season</th><th>2026–27 dates</th><th>Days</th><th>Liturgical color</th><th>Background</th><th>Text</th></tr></thead><tbody><tr><td>Advent</td><td>Nov 29 – Dec 24</td><td>26</td><td>Blue (Lutheran; Episcopal often blue or purple)</td><td><span class="swatch" style="background:#203f8a"></span><code>#203f8a</code></td><td><span class="swatch" style="background:#2f55ab"></span><code>#2f55ab</code></td></tr><tr><td>Christmas</td><td>Dec 25 – Jan 5</td><td>12</td><td>White or gold</td><td><span class="swatch" style="background:#d3a24c"></span><code>#d3a24c</code></td><td><span class="swatch" style="background:#b8873a"></span><code>#b8873a</code></td></tr><tr><td>Epiphany</td><td>Jan 6</td><td>1</td><td>White</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>Season after Epiphany</td><td>Jan 7 – Feb 9</td><td>34</td><td>Green</td><td><span class="swatch" style="background:#345f19"></span><code>#345f19</code></td><td><span class="swatch" style="background:#437a22"></span><code>#437a22</code></td></tr><tr><td>Lent</td><td>Feb 10 (Ash Wednesday) – Mar 20</td><td>39</td><td>Purple (Episcopal also unbleached linen)</td><td><span class="swatch" style="background:#73137a"></span><code>#73137a</code></td><td><span class="swatch" style="background:#8c2a93"></span><code>#8c2a93</code></td></tr><tr><td>Holy Week</td><td>Mar 21 (Palm Sunday) – Mar 24</td><td>4</td><td>Scarlet or deep red</td><td><span class="swatch" style="background:#9e1427"></span><code>#9e1427</code></td><td><span class="swatch" style="background:#b82236"></span><code>#b82236</code></td></tr><tr><td>Triduum</td><td>Mar 25 – Mar 27</td><td>3</td><td>Maundy Thursday scarlet or white; Good Friday bare or black; Easter Vigil white or gold</td><td><span class="swatch" style="background:#1c1a1a"></span><code>#1c1a1a</code></td><td><span class="swatch" style="background:#383434"></span><code>#383434</code></td></tr><tr><td>Easter</td><td>Mar 28 – May 15</td><td>49</td><td>White or gold</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#cfcfcf"></span><code>#cfcfcf</code></td></tr><tr><td>Pentecost</td><td>May 16</td><td>1</td><td>Red</td><td><span class="swatch" style="background:#911d14"></span><code>#911d14</code></td><td><span class="swatch" style="background:#a9281e"></span><code>#a9281e</code></td></tr><tr><td>Season after Pentecost</td><td>May 17 – Nov 27</td><td>195</td><td>Green</td><td><span class="swatch" style="background:#345f19"></span><code>#345f19</code></td><td><span class="swatch" style="background:#437a22"></span><code>#437a22</code></td></tr></tbody></table><p>Feast days in the green seasons that take another color:</p><table><thead><tr><th>Feast day</th><th>Falls in</th><th>Color</th></tr></thead><tbody><tr><td>Baptism of Our Lord</td><td>Season after Epiphany (first Sunday)</td><td>White</td></tr><tr><td>Transfiguration</td><td>Season after Epiphany (last Sunday)</td><td>White</td></tr><tr><td>Trinity Sunday</td><td>Season after Pentecost (first Sunday)</td><td>White</td></tr><tr><td>Reformation Sunday (Lutheran)</td><td>Season after Pentecost (late October)</td><td>Red</td></tr><tr><td>All Saints</td><td>Season after Pentecost (Nov 1 or the Sunday after)</td><td>White</td></tr><tr><td>Christ the King</td><td>Season after Pentecost (last Sunday)</td><td>White</td></tr></tbody></table></div></section>
                     <section><h3>Notes from Claude</h3><div><p>The table made the color codes easy to copy, and later they went straight into the stylesheet.</p></div></section>
                 </div>
             </div>
@@ -239,7 +271,7 @@
                 </div>
                 <div id="prompt-4-body" class="pj pj-gutter">
                     <div class="pj-prompt"><blockquote><p>can we also go to Catholic/Roman becuse i want to include ordinary time thanks</p></blockquote></div>
-                    <section><h3>Context from Claude</h3><div><p>The name "Ordinary Time" decided the tradition. I redid the dates for the Catholic year and updated the README.</p></div></section>
+                    <section><h3>Context from Claude</h3><div><p>The name "Ordinary Time" decided the tradition. I redid the dates for the Catholic year and updated the README.</p><table><thead><tr><th>Season</th><th>2026–27 dates</th><th>Days</th><th>Liturgical color</th><th>Background</th><th>Text</th></tr></thead><tbody><tr><td>Advent</td><td>Nov 29 – Dec 24</td><td>26</td><td>Violet</td><td><span class="swatch" style="background:#73137a"></span><code>#73137a</code></td><td><span class="swatch" style="background:#8c2a93"></span><code>#8c2a93</code></td></tr><tr><td>Christmas</td><td>Dec 25 – Jan 10 (Baptism of the Lord)</td><td>17</td><td>White or gold</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>Ordinary Time</td><td>Jan 11 – Feb 9</td><td>30</td><td>Green</td><td><span class="swatch" style="background:#345f19"></span><code>#345f19</code></td><td><span class="swatch" style="background:#437a22"></span><code>#437a22</code></td></tr><tr><td>Lent</td><td>Feb 10 (Ash Wednesday) – Mar 20</td><td>39</td><td>Violet</td><td><span class="swatch" style="background:#73137a"></span><code>#73137a</code></td><td><span class="swatch" style="background:#8c2a93"></span><code>#8c2a93</code></td></tr><tr><td>Holy Week (end of Lent)</td><td>Mar 21 (Palm Sunday) – Mar 24</td><td>4</td><td>Violet; Palm Sunday is red</td><td><span class="swatch" style="background:#73137a"></span><code>#73137a</code></td><td><span class="swatch" style="background:#8c2a93"></span><code>#8c2a93</code></td></tr><tr><td>Paschal Triduum</td><td>Mar 25 – Mar 27</td><td>3</td><td>Holy Thursday white; Good Friday red; Easter Vigil white</td><td><span class="swatch" style="background:#d3a24c"></span><code>#d3a24c</code></td><td><span class="swatch" style="background:#b8873a"></span><code>#b8873a</code></td></tr><tr><td>Easter</td><td>Mar 28 – May 16</td><td>50</td><td>White or gold</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#cfcfcf"></span><code>#cfcfcf</code></td></tr><tr><td>Pentecost (last day of Easter)</td><td>May 16</td><td>1</td><td>Red</td><td><span class="swatch" style="background:#911d14"></span><code>#911d14</code></td><td><span class="swatch" style="background:#a9281e"></span><code>#a9281e</code></td></tr><tr><td>Ordinary Time</td><td>May 17 – Nov 27</td><td>195</td><td>Green</td><td><span class="swatch" style="background:#345f19"></span><code>#345f19</code></td><td><span class="swatch" style="background:#437a22"></span><code>#437a22</code></td></tr></tbody></table><p>Single days that take another color:</p><table><thead><tr><th>Day</th><th>2026–27 date</th><th>Color</th><th>Background</th><th>Text</th></tr></thead><tbody><tr><td>Gaudete Sunday (Advent 3)</td><td>Dec 13</td><td>Rose</td><td><span class="swatch" style="background:#d68fa6"></span><code>#d68fa6</code></td><td><span class="swatch" style="background:#c47790"></span><code>#c47790</code></td></tr><tr><td>Epiphany</td><td>Jan 3</td><td>White or gold</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>Laetare Sunday (Lent 4)</td><td>Mar 7</td><td>Rose</td><td><span class="swatch" style="background:#d68fa6"></span><code>#d68fa6</code></td><td><span class="swatch" style="background:#c47790"></span><code>#c47790</code></td></tr><tr><td>Palm Sunday</td><td>Mar 21</td><td>Red</td><td><span class="swatch" style="background:#911d14"></span><code>#911d14</code></td><td><span class="swatch" style="background:#a9281e"></span><code>#a9281e</code></td></tr><tr><td>Holy Thursday (evening)</td><td>Mar 25</td><td>White</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>Good Friday</td><td>Mar 26</td><td>Red</td><td><span class="swatch" style="background:#911d14"></span><code>#911d14</code></td><td><span class="swatch" style="background:#a9281e"></span><code>#a9281e</code></td></tr><tr><td>Easter Vigil</td><td>Mar 27 (night)</td><td>White or gold</td><td><span class="swatch" style="background:#d3a24c"></span><code>#d3a24c</code></td><td><span class="swatch" style="background:#b8873a"></span><code>#b8873a</code></td></tr><tr><td>Trinity Sunday</td><td>May 23</td><td>White</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>All Saints</td><td>Nov 1</td><td>White</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr><tr><td>Christ the King</td><td>Nov 21</td><td>White</td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#d4d4d4"></span><code>#d4d4d4</code></td></tr></tbody></table></div></section>
                     <section><h3>Notes from Claude</h3><div><p>The Catholic version changes a few things: Christmas runs through the Baptism of the Lord, Holy Week is part of Lent, and rose appears on Gaudete and Laetare Sundays.</p></div></section>
                 </div>
             </div>
@@ -251,7 +283,7 @@
                 </div>
                 <div id="prompt-5-body" class="pj pj-gutter">
                     <div class="pj-prompt"><blockquote><p>can you show me the images of the times again? also i'm wondering if we might be able to do a simplified calendar for now, because all the details are a little overwhelming... but i don't want to be inaccurate...</p></blockquote><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-calendar-wheel.png" target="_blank"><img src="assets/images/2026-11-24-calendar-wheel.png" alt="A wheel diagram of the liturgical year with seven seasons: Advent, Christmas, Ordinary Time, Lent, Triduum, Easter, Ordinary Time"></a></li></ul></div>
-                    <section><h3>Context from Claude</h3><div><p>Laurel shared a wheel diagram of the year with seven seasons. I showed those seven as swatches and wrote the start and end rules into the README.</p></div></section>
+                    <section><h3>Context from Claude</h3><div><p>Laurel shared a wheel diagram of the year with seven seasons. I showed those seven as swatches and wrote the start and end rules into the README.</p><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-chart-seven-seasons.png" target="_blank"><img src="assets/images/2026-11-24-chart-seven-seasons.png" alt="Claude’s chart of the seven simplified Catholic seasons for 2026–27, with dates and colors"></a></li></ul></div></section>
                     <section><h3>Notes from Claude</h3><div><p>The key idea: naming the <em>season</em> is always accurate. Feast-day colors are a separate layer on top. Gold for the Triduum is a design choice, since its real colors change each day.</p></div></section>
                 </div>
             </div>
@@ -275,7 +307,7 @@
                 </div>
                 <div id="prompt-7-body" class="pj pj-gutter">
                     <div class="pj-prompt"><blockquote><p>can you show me these 3 red holidays in addition to the simplified 7?</p></blockquote></div>
-                    <section><h3>Context from Claude</h3><div><p>I drew the seven seasons with the three red days as thin slivers in the year strip, and as their own swatches below.</p></div></section>
+                    <section><h3>Context from Claude</h3><div><p>I drew the seven seasons with the three red days as thin slivers in the year strip, and as their own swatches below.</p><ul class="pj-thumbs"><li><a href="assets/images/2026-11-24-chart-seven-seasons-red-days.png" target="_blank"><img src="assets/images/2026-11-24-chart-seven-seasons-red-days.png" alt="Claude’s chart of the seven seasons plus Palm Sunday, Good Friday and Pentecost in red"></a></li></ul></div></section>
                     <section><h3>Notes from Claude</h3><div><p>Seeing the red days inside Lent, the Triduum and Easter made it clear they interrupt a season rather than replace it.</p></div></section>
                 </div>
             </div>
@@ -666,7 +698,31 @@
 
 </div>
 
+<dialog class="pj-lightbox" aria-label="Image">
+    <div class="pj-lightbox-frame">
+        <img src="" alt="">
+        <div class="pj-lightbox-bar"><button type="button">Close</button></div>
+    </div>
+</dialog>
+
 <script>
+    // lightbox: a thumbnail opens its image full size; click anywhere,
+    // press Escape or use Close to go back. Without JavaScript the
+    // thumbnail is still a plain link to the image.
+    var lightbox = document.querySelector(".pj-lightbox");
+    var lightboxImg = lightbox.querySelector("img");
+    document.querySelectorAll(".pj-thumbs a").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+            e.preventDefault();
+            var thumb = a.querySelector("img");
+            lightboxImg.src = a.getAttribute("href");
+            lightboxImg.alt = thumb.alt;
+            lightbox.showModal();
+        });
+    });
+    lightbox.addEventListener("click", function () { lightbox.close(); });
+    lightbox.addEventListener("close", function () { lightboxImg.src = ""; });
+
     // one day at a time, chosen from the sidebar; the latest day by default
     function showDay() {
         var days = document.querySelectorAll(".pj-day");

@@ -146,7 +146,7 @@ The season's key is set as a class on `<body>` (`advent`, `christmas`, `ordinary
 
 - **test.html**: open it after any change to `calendar.js`. It checks Easter dates (including the earliest and latest possible), Advent start dates, about 30 specific days (including the USCCB 2028 calendar, the 2028 leap day, and 2029's Monday Baptism of the Lord), and every day from 1900 to 2200 for gaps or seasons out of order.
 - **`?date=YYYY-MM-DD`**: shows the page for any date, e.g. `index.html?date=2027-05-16` (Pentecost).
-- **The dot** (testing easter egg): a 12px circle 20px from the top right, the same color as the season name. An invisible native `<select>` sits on top of it, so clicking it opens a dropdown for the church year being viewed:
+- **The dot** (testing easter egg): a 16px circle 20px from the top right, the same color as the season name. An invisible native `<select>` sits on top of it, so clicking it opens a dropdown for the church year being viewed:
   - first row (not choosable): the date being viewed, e.g. "Viewing Tue, Nov 24, 2026 (today)"
   - "← 2024–25": jumps to the start of the previous church year
   - "----- 2025 -----" dividers where the calendar year changes (not choosable)
@@ -154,6 +154,20 @@ The season's key is set as a class on `<body>` (`advent`, `christmas`, `ordinary
   - a plain "----------------" divider, then "→ 2026–27": jumps to the next church year
   - "→ Today": back to the real date
 - **`?date=YYYY-MM-DD&next`**: shows that date, then after 5 seconds plays the 60-second midnight fade to the next day, e.g. `index.html?date=2026-11-28&next` (Ordinary Time → Advent).
+
+## Favicon
+
+A plain square in the current season's background color, drawn by `script.js` (no image file). It changes with the season, straight to the new color at midnight. On Christmas and Easter it's white, which can be hard to see on a light tab bar.
+
+## Link previews
+
+When the site is texted or posted, the preview image shows today's season, like the page itself.
+
+- `assets/social/` has one 1200×630 image per look: `advent`, `christmas`, `ordinary-time`, `lent`, `palm-sunday`, `triduum`, `good-friday`, `easter`, `pentecost`. Each is a screenshot of the real page, without the dot. If a color or the type changes, these need to be remade.
+- `index.html` has the preview tags (`og:image`, `twitter:image`, `og:description`).
+- `scripts/update-social-image.js` points those tags at today's season, using the date in **Chicago** (previews can't know the viewer's time zone).
+- `.github/workflows/publish.yml` publishes the site on every push to `main`, and every night just after midnight Chicago time, running the script first. It needs repo **Settings → Pages → Source: GitHub Actions**.
+- Some apps (Slack, Facebook) cache a preview for a while, so a link shared there just after midnight may still show yesterday's season.
 
 ## Known issues
 

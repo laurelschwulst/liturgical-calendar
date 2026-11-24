@@ -1,0 +1,44 @@
+# Publishes the site to GitHub Pages: on every push to main, and every
+# night just after midnight Chicago time, so the link preview (the
+# og:image in index.html) always shows today's season.
+#
+# Needs: repo Settings → Pages → Source set to "GitHub Actions".
+
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 05:05 and 06:05 UTC: 12:05 am in Chicago in both daylight
+    # saving time (CDT) and standard time (CST). The other run
+    # simply republishes the same day.
+    - cron: "5 5 * * *"
+    - cron: "5 6 * * *"
+  workflow_dispatch:   # a "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Point the link preview at today's season
+        run: node scripts/update-social-image.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

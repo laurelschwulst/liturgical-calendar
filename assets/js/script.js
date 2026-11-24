@@ -57,6 +57,27 @@ $(function () {
 
     shown = date;
     buildMenu(date);
+    setFavicon(season.key);
+  }
+
+  // favicon: a plain square in the season's background color. The color
+  // is read from style.css (an off-screen element with the season's class),
+  // so it's never the halfway color of a fade, and the CSS stays the one
+  // place colors are set.
+  function setFavicon(key) {
+    var probe = $("<span>").addClass(key).css({ position: "absolute", left: "-9999px", transition: "none" }).appendTo("body");
+    var color = probe.css("background-color");
+    probe.remove();
+
+    var canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 64;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 64, 64);
+
+    var $icon = $("link[rel='icon']");
+    if (!$icon.length) $icon = $('<link rel="icon" type="image/png">').appendTo("head");
+    $icon.attr("href", canvas.toDataURL("image/png"));
   }
 
   // --- testing easter egg: the dot and its <select> ---
