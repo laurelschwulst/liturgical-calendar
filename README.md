@@ -103,9 +103,11 @@ Only the name of the current season or red day (e.g. *Advent*, *Ordinary Time*, 
 
 ### 5. Time ✅ Decided
 - Uses the **viewer's local date**.
-- If the page is left open, it changes at local midnight with a **slow fade of about 60 seconds**:
-  - the background and text colors fade from the old season's colors to the new ones (CSS `transition`);
-  - if the name changes too, the old name fades out and the new one fades in partway through.
+- If the page is left open, it changes at local midnight with a **15-second fade that sweeps from right to left**:
+  - the page underneath switches to the new season right away;
+  - on top lies a copy of the old season (its name and its dot), with a gradient mask (solid, then a soft edge 25% of the screen wide, then transparent);
+  - the edge moves from the right side of the screen to past the left, so the old season fades out from the right and the new one shows through, then the copy is removed and the favicon changes;
+  - with "reduce motion" turned on in the viewer's system settings, it simply switches.
 - On page load there is no fade; it simply shows today.
 - A hidden `?date=YYYY-MM-DD` URL parameter shows any other date, for testing.
 
@@ -133,7 +135,7 @@ preview.html            every season full-screen, for checking colors (design to
 test.html               checks the date logic against published dates
 journal.html            "Coding & prompt journal": a summary of each coding day and the prompts
                         from each session (layout and styles credited to Celine Nguyen)
-assets/css/style.css    fonts, layout, one class per season / red day, 60s fade
+assets/css/style.css    fonts, layout, one class per season / red day, fade layer
 assets/js/calendar.js   date logic only (Easter, seasons, red days); no page code
 assets/js/script.js     the page: shows today, ?date= testing, midnight fade
 assets/js/jquery.min.js
@@ -146,18 +148,20 @@ The season's key is set as a class on `<body>` (`advent`, `christmas`, `ordinary
 
 - **test.html**: open it after any change to `calendar.js`. It checks Easter dates (including the earliest and latest possible), Advent start dates, about 30 specific days (including the USCCB 2028 calendar, the 2028 leap day, and 2029's Monday Baptism of the Lord), and every day from 1900 to 2200 for gaps or seasons out of order.
 - **`?date=YYYY-MM-DD`**: shows the page for any date, e.g. `index.html?date=2027-05-16` (Pentecost).
-- **The dot** (testing easter egg): a 16px circle 20px from the top right, the same color as the season name. An invisible native `<select>` sits on top of it, so clicking it opens a dropdown for the church year being viewed:
+- **The dot** (testing easter egg): a 14px circle 20px from the top right, the same color as the season name. An invisible native `<select>` sits on top of it, so clicking it opens a dropdown for the church year being viewed:
   - first row (not choosable): the date being viewed, e.g. "Viewing Tue, Nov 24, 2026 (today)"
   - "← 2024–25": jumps to the start of the previous church year
   - "----- 2025 -----" dividers where the calendar year changes (not choosable)
-  - every season and red day, e.g. "Advent ... Nov 30 – Dec 24"; the one being viewed is selected; choosing one goes to its first day (`?date=`)
+  - every season and red day of the church year, continued to at least the end of the calendar year (so in the fall, the coming Advent and Christmas are listed too), e.g. "Advent ... Nov 30 – Dec 24"; Lent, the Triduum and Easter show their full length, and each red day is listed right after its season as "● Palm Sunday ... Mar 29"; the one being viewed is selected; choosing one goes to its first day (`?date=`)
   - a plain "----------------" divider, then "→ 2026–27": jumps to the next church year
-  - "→ Today": back to the real date
-- **`?date=YYYY-MM-DD&next`**: shows that date, then after 5 seconds plays the 60-second midnight fade to the next day, e.g. `index.html?date=2026-11-28&next` (Ordinary Time → Advent).
+  - "↓ Today": back to the real date
+- **Arrow keys**: ← / → go to the previous / next season or red day, the same steps the page takes at real midnights (Ordinary Time → Advent → Christmas → … → Palm Sunday → Lent → Triduum → Good Friday → Triduum → Easter → Pentecost → Ordinary Time). A label in the top left shows the date and season, and the address updates to `?date=` so a reload stays there.
+- **m**: midnight mode on/off. When on, ← / → play the 15-second midnight fade into each step.
+- **`?date=YYYY-MM-DD&next`**: shows that date, then after 5 seconds plays the 15-second midnight fade to the next day, e.g. `index.html?date=2026-11-28&next` (Ordinary Time → Advent).
 
 ## Favicon
 
-A plain square in the current season's background color, drawn by `script.js` (no image file). It changes with the season, straight to the new color at midnight. On Christmas and Easter it's white, which can be hard to see on a light tab bar.
+A plain square in the current season's background color, drawn by `script.js` (no image file). It changes with the season, once the midnight fade has finished. On Christmas and Easter it's white, which can be hard to see on a light tab bar.
 
 ## Link previews
 

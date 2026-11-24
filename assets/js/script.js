@@ -1,7 +1,8 @@
 /*
   Liturgical Calendar: the page
   Shows today's season (or red day) and changes it at local midnight
-  with a slow fade. The date math lives in calendar.js.
+  with a 15-second fade that sweeps from right to left. The date math
+  lives in calendar.js.
 
   Testing:
     ?date=2027-05-16         show any date
@@ -9,11 +10,14 @@
                              to the next day, as it would at midnight
     the dot, top right       opens a dropdown of every season in the church
                              year; choosing one goes to its first day (?date=)
+    ← / →                    previous / next season or red day
+    m                        midnight mode: ← / → play the midnight fade
 */
 
 $(function () {
 
-  var FADE = 60 * 1000;            // matches the 60s CSS transition in style.css
+  var FADE = 15 * 1000;            // length of the midnight fade
+  var BAND = 25;                   // width of the soft edge, % of the screen
   var ALL_KEYS = Object.keys(LiturgicalCalendar.NAMES).join(" ");
 
   var $body = $("body");
@@ -22,6 +26,7 @@ $(function () {
   var params = new URLSearchParams(window.location.search);
   var fixedDate = parseDate(params.get("date"));   // null unless ?date= is given
   var shown = null;                                // the date currently on screen
+  var shownKey = null;                             // and its season
 
   // "2027-05-16" → { year, month, day }, or null
   function parseDate(s) {
@@ -41,23 +46,52 @@ $(function () {
 
   function show(date, fade) {
     var season = LiturgicalCalendar.seasonFor(date.year, date.month, date.day);
-    var nameChanges = $name.text() !== season.name;
+    var oldKey = shownKey;
 
-    // colors: swapping the class is enough; CSS does the 60s fade
-    $body.removeClass(ALL_KEYS).addClass(season.key);
-
-    // name: fade the old one out, swap it, fade the new one in
-    if (fade && nameChanges) {
-      $name.stop(true).animate({ opacity: 0 }, FADE / 2, function () {
-        $name.text(season.name).animate({ opacity: 1 }, FADE / 2);
-      });
+    // keep a copy of the old season on top before the page changes;
+    // the favicon changes once the fade has finished
+    if (fade && oldKey && oldKey !== season.key) {
+      fadeOut(oldKey, $name.text(), function () { setFavicon(season.key); });
     } else {
-      $name.stop(true).css("opacity", 1).text(season.name);
+      setFavicon(season.key);
     }
+
+    // the page itself switches right away
+    $body.removeClass(ALL_KEYS).addClass(season.key);
+    $name.text(season.name);
+    shownKey = season.key;
 
     shown = date;
     buildMenu(date);
-    setFavicon(season.key);
+  }
+
+  // the midnight fade: a copy of the old season (name and dot) lies over
+  // the page, and a gradient mask sweeps across it from right to left:
+  // solid on the left, a soft edge BAND% wide, transparent on the right.
+  // The edge moves from the right side of the screen to past the left,
+  // then the copy is removed and `done` runs (it updates the favicon).
+  function fadeOut(oldKey, oldName, done) {
+    $(".fade-layer").remove();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+
+    var layer = $('<div class="fade-layer">').addClass(oldKey)
+      .append($('<div class="time">').append($("<i>").text(oldName)))
+      .append('<span class="dot"></span>')
+      .appendTo("body")[0];
+
+    var start = null;
+    function frame(now) {
+      if (start === null) start = now;
+      var p = Math.min((now - start) / FADE, 1);
+      var edge = 100 - p * (100 + BAND);           // 100% → -BAND%
+      var mask = "linear-gradient(to right, #000 " + edge + "%, transparent " + (edge + BAND) + "%)";
+      if (!layer.isConnected) return;               // replaced by a newer fade
+      layer.style.webkitMaskImage = mask;
+      layer.style.maskImage = mask;
+      if (p < 1) requestAnimationFrame(frame);
+      else { $(layer).remove(); done(); }
+    }
+    requestAnimationFrame(frame);
   }
 
   // favicon: a plain square in the season's background color. The color
@@ -89,6 +123,16 @@ $(function () {
     return d.year + "-" + String(d.month).padStart(2, "0") + "-" + String(d.day).padStart(2, "0");
   }
 
+  // the red days, and the season each one falls in
+  var RED_DAYS = { "palm-sunday": "lent", "good-friday": "triduum", "pentecost": "easter" };
+
+  // "Nov 29 – Dec 24", or "Apr 2 – 4" within one month, or "Mar 29"
+  function dateRange(a, b) {
+    if (a === b) return shortDate(a);
+    var da = LiturgicalCalendar.toDate(a), db = LiturgicalCalendar.toDate(b);
+    return shortDate(a) + " – " + (da.month === db.month ? db.day : shortDate(b));
+  }
+
   function shortDate(n) {
     var d = LiturgicalCalendar.toDate(n);
     return MONTHS[d.month - 1] + " " + d.day;
@@ -109,7 +153,8 @@ $(function () {
   }
 
   // Fills the dropdown for the church year that contains `date`
-  // (Advent to the day before the next Advent):
+  // (Advent to the day before the next Advent), continued to at least
+  // the end of the calendar year:
   //
   //   Viewing Tue, Nov 24, 2026 (today)      ← not choosable
   //   ← 2024–25
@@ -119,7 +164,7 @@ $(function () {
   //   Ordinary Time ... May 25 – Nov 28      ← the season being viewed (selected)
   //   ----------------                        ← plain divider, not choosable
   //   → 2026–27
-  //   → Today
+  //   ↓ Today
   //
   // Each choosable option's value is a date to go to; "Today" has no value.
   function buildMenu(date) {
@@ -130,14 +175,29 @@ $(function () {
     var next = C.adventStart(startYear + 1);
     var isToday = sameDay(date, today());
 
-    // walk the church year day by day, grouping days into seasons and red days
+    // walk day by day from the start of the church year, grouping days into
+    // seasons and red days. Keep going past the end of the church year until
+    // the end of the calendar year too, so the coming Advent and Christmas
+    // show up in the fall; a season that starts before Dec 31 is listed whole.
+    //
+    // Red days count as part of their season here, so Lent, the Triduum and
+    // Easter show their full length; each red day is listed after its season.
+    var yearEnd = C.dayNumber(date.year + 1, 1, 1);
     var ranges = [];
-    for (var day = start; day < next; day++) {
+    for (var day = start; ; day++) {
       var d = C.toDate(day);
       var season = C.seasonFor(d.year, d.month, d.day);
+      var parent = RED_DAYS[season.key];               // e.g. "lent" for Palm Sunday
+      var key = parent || season.key;
       var last = ranges[ranges.length - 1];
-      if (last && last.key === season.key) last.end = day;
-      else ranges.push({ key: season.key, name: season.name, start: day, end: day });
+      var sameSeason = last && last.key === key;
+      if (day >= next && day >= yearEnd && !sameSeason) break;
+      if (!sameSeason) {
+        last = { key: key, name: C.NAMES[key], start: day, end: day, red: [] };
+        ranges.push(last);
+      }
+      last.end = day;
+      if (parent) last.red.push({ name: season.name, day: day });
     }
 
     var $menu = $("#menu").empty();
@@ -155,15 +215,18 @@ $(function () {
         option("----- " + startsIn + " -----", "", true);
         year = startsIn;
       }
-      var current = n >= r.start && n <= r.end;
-      var range = r.start === r.end ? shortDate(r.start) : shortDate(r.start) + " – " + shortDate(r.end);
-      option(r.name + " ... " + range, isoDate(r.start))
-        .prop("selected", current);
+      var onRedDay = r.red.some(function (x) { return x.day === n; });
+      option(r.name + " ... " + dateRange(r.start, r.end), isoDate(r.start))
+        .prop("selected", n >= r.start && n <= r.end && !onRedDay);
+      r.red.forEach(function (x) {
+        option("● " + x.name + " ... " + shortDate(x.day), isoDate(x.day))
+          .prop("selected", x.day === n);
+      });
     });
 
     option(DIVIDER, "", true);
     option("→ " + churchYear(startYear + 1), isoDate(next));
-    option("→ Today", "");
+    option("↓ Today", "");
   }
 
   // choosing an option goes to that date (or back to today)
@@ -175,14 +238,7 @@ $(function () {
   // 1. on load: show the date right away, no fade
   show(fixedDate || today(), false);
 
-  // 2. turn the CSS fade on only after that first paint
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
-      $body.addClass("can-fade");
-    });
-  });
-
-  // 3a. testing: ?date=…&next fades to the following day after 5 seconds
+  // 2a. testing: ?date=…&next fades to the following day after 5 seconds
   if (fixedDate && params.has("next")) {
     setTimeout(function () {
       var n = LiturgicalCalendar.dayNumber(fixedDate.year, fixedDate.month, fixedDate.day);
@@ -190,13 +246,76 @@ $(function () {
     }, 5000);
   }
 
-  // 3b. normally: check the clock every 15 seconds, and fade when the date
-  //     has changed (this also catches a laptop waking up on a new day)
+  // 2b. normally: check the clock every 15 seconds, and fade when the date
+  //     has changed (this also catches a laptop waking up on a new day).
+  //     Stops once the keyboard has been used to look at other dates.
+  var browsing = false;
   if (!fixedDate) {
     setInterval(function () {
+      if (browsing) return;
       var now = today();
       if (!sameDay(now, shown)) show(now, true);
     }, 15 * 1000);
   }
+
+  // 3. testing with the keyboard
+  //    ← / →  go to the previous / next season or red day: the same steps
+  //           the page takes at real midnights
+  //    m      midnight mode on/off: when on, ← / → play the midnight fade
+  var midnightMode = false;
+  var $label = $("<div>").css({
+    position: "fixed", top: "20px", left: "20px", zIndex: 4,
+    padding: "4px 10px", borderRadius: "4px",
+    background: "rgba(0, 0, 0, .6)", color: "white",
+    font: "14px -apple-system, system-ui, sans-serif",
+    pointerEvents: "none", display: "none"
+  }).appendTo("body");
+  var labelTimer;
+
+  function say(text) {
+    $label.stop(true).css("opacity", 1).text(text).show();
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(function () { $label.fadeOut(400); }, 2500);
+  }
+
+  function keyOf(n) {
+    var d = LiturgicalCalendar.toDate(n);
+    return LiturgicalCalendar.seasonFor(d.year, d.month, d.day).key;
+  }
+
+  // first day of the next (+1) or previous (-1) season or red day
+  function step(n, direction) {
+    var key = keyOf(n);
+    if (direction > 0) {
+      while (keyOf(n) === key) n++;
+      return n;
+    }
+    while (keyOf(n - 1) === key) n--;     // back to the start of this one
+    n--;                                  // into the previous one
+    var prev = keyOf(n);
+    while (keyOf(n - 1) === prev) n--;    // and to its start
+    return n;
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var C = LiturgicalCalendar;
+
+    if (e.key === "m" || e.key === "M") {
+      midnightMode = !midnightMode;
+      say("Midnight mode " + (midnightMode ? "on: ← → play the fade" : "off"));
+      return;
+    }
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    e.stopPropagation();   // never let the arrows change the dropdown itself
+
+    var n = step(C.dayNumber(shown.year, shown.month, shown.day), e.key === "ArrowRight" ? 1 : -1);
+    var date = C.toDate(n);
+    browsing = true;
+    show(date, midnightMode);
+    history.replaceState(null, "", "?date=" + isoDate(n));
+    say(longDate(n) + " · " + C.seasonFor(date.year, date.month, date.day).name + (midnightMode ? " · midnight" : ""));
+  }, true);   // capture phase, before the dropdown sees the key
 
 });

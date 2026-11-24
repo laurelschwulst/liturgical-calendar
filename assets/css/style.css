@@ -51,7 +51,8 @@ body {
   pointer-events: none;
 }
 
-#time {
+#time,
+.fade-layer .time {
   display: flex;
   align-items: center; /* Centers items vertically */
   /* Optional: explicit height is required if the container isn't already tall enough */
@@ -65,12 +66,30 @@ i, em {
   font-style: normal; /* the webfont is already italic */
 }
 
-/* fade
-   Turned on by script.js (body.can-fade) only after the first paint,
-   so the page never fades on load, only at midnight. */
+/* midnight fade
+   The page underneath switches to the new season right away. On top,
+   script.js lays a copy of the old season (.fade-layer) and sweeps a
+   gradient mask across it from right to left, so the old season fades
+   out from the right and the new one shows through. */
 
-body.can-fade {
-  transition: background-color 60s linear, color 60s linear;
+.fade-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3;            /* above the dot, so the old dot fades too */
+  padding: 18px;         /* same as the body's margin, so the name lines up */
+  overflow: hidden;
+  pointer-events: none;  /* the real dot underneath stays clickable */
+}
+
+/* a copy of the dot in the old season's color, in the same place */
+.fade-layer .dot {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* seasons
@@ -122,15 +141,16 @@ body.can-fade {
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  z-index: 2;
   pointer-events: auto; /* the rest of the page ignores clicks */
 }
 
 #dot {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: currentColor; /* same color as the season name */
 }
