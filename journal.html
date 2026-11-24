@@ -195,11 +195,11 @@
     <nav>
         <div class="nav-head">
             <p class="nav-title">Coding &amp; prompt journal</p>
-            <p class="nav-meta">63 prompts · 2 days</p>
+            <p class="nav-meta">70 prompts · 2 days</p>
         </div>
         <ul>
             <li><a href="#2026-11-19"><span class="label">November 19, 2026</span><span class="count">coding</span></a></li>
-            <li><a href="#2026-11-24"><span class="label">November 24, 2026</span><span class="count">coding • 63 prompts</span></a></li>
+            <li><a href="#2026-11-24"><span class="label">November 24, 2026</span><span class="count">coding • 70 prompts</span></a></li>
         </ul>
         <a class="back" href="./">Liturgical Calendar</a>
     </nav>
@@ -230,7 +230,7 @@
         <article class="pj-day" id="2026-11-24">
             <header class="day-header pj-gutter">
                 <h1>November 24, 2026</h1>
-                <p>coding • 63 prompts</p>
+                <p>coding • 70 prompts</p>
             </header>
 
             <div id="prompt-1" class="pj-entry" data-open="true">
@@ -1014,6 +1014,87 @@ Christmas ... Dec 25 – Jan 10
                     <div class="pj-prompt"><blockquote><p>i was also wondering, could we add a keyboard shortcut to test the transition between the seasons? aka midnight? maybe we can press the letter "m" to toggle this mode, so if i'm on ordinary time we can go to advent from there? and so on. also, can we make it so if we tap left or right it goes to the next or previous season/holiday?</p></blockquote></div>
                     <section><h3>Context from Claude</h3><div><p>← and → now step to the previous or next season or red day, the same steps the page takes at real midnights, and <b>m</b> turns on a midnight mode in which each step plays the fade. A label in the corner shows the date and season.</p></div></section>
                     <section><h3>Notes from Claude</h3><div><p>Stepping a day at a time through the red days (Palm Sunday back to Lent, Good Friday back to the Triduum) shows every change the page will actually make in a year.</p></div></section>
+                </div>
+            </div>
+
+            <div id="prompt-64" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">64</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Push</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-64-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-64-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks let's push</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>Everything had already been pushed in the previous step, and nothing in the folder had changed since, so there was nothing new to send.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-65" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">65</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Why not push from here?</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-65-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-65-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>just checking, why weren't we working locally and then pushing? a little confused</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>All the files were edited right in Laurel's folder. But Claude couldn't run commands on her Mac: the tools for that need up to 17 GB of free disk space, and the Mac was short on it. So git ran from a copy of the repo in Claude's cloud workspace: copy the files over, commit, push.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>That's why the folder's own git history needed <code>git fetch</code> and <code>git reset --hard origin/main</code> after each push.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-66" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">66</span>
+                    <h2 class="pj-title"><span class="pj-title-text">No midnight mode</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-66-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-66-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks! would it be possible to not have a midnight mode and instead simply have left and right arrows simulate the transition at midnight?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p><b>m</b> was removed. ← and → now always play the 15-second midnight fade.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-67" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">67</span>
+                    <h2 class="pj-title"><span class="pj-title-text">The local site</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-67-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-67-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>local site doesn't work?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The local server had stopped. Restarting it is one line: <code>python3 -m http.server 8000</code> in the project folder.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>Keeping git commands in a second Terminal tab keeps the server running.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-68" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">68</span>
+                    <h2 class="pj-title"><span class="pj-title-text">A smoother end</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-68-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-68-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks! so the very end of the sweep gradient fade is a little awkward. it's like it jumps to the end once it's almost there... any way to correct this?</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The sweep was redrawn by the script on every frame, which a high-resolution screen can fall behind on. It's now a CSS animation: one fixed gradient, 2.5 screens wide, that the browser slides from right to left on its own.</p></div></section>
+                    <section><h3>Notes from Claude</h3><div><p>In the test browser the old and new versions both ended evenly, so the jump likely came from skipped frames. Next to try, if needed: an ease-out.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-69" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">69</span>
+                    <h2 class="pj-title"><span class="pj-title-text">No label, for now</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-69-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-69-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks! can we remove the little text that shows you what date it's changing to when you press the left or right arrows? i want to keep it in the code because i might want to bring it back, i just don't like how it looks rn</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>The corner label is off. Its code stays; <code>SHOW_LABEL = true</code> in <code>script.js</code> brings it back.</p></div></section>
+                </div>
+            </div>
+            <div id="prompt-70" class="pj-entry" data-open="true">
+                <div class="pj-head">
+                    <span class="pj-number">70</span>
+                    <h2 class="pj-title"><span class="pj-title-text">Journal and push</span><button type="button" class="pj-chevron" aria-expanded="true" aria-controls="prompt-70-body" aria-label="Collapse"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"></path><path class="pj-toggle-bar" d="M8 3v10"></path></svg></button></h2>
+                    <span aria-hidden="true" class="pj-head-rule"></span>
+                </div>
+                <div id="prompt-70-body" class="pj pj-gutter">
+                    <div class="pj-prompt"><blockquote><p>thanks, can we update the prompt journal and push to github</p></blockquote></div>
+                    <section><h3>Context from Claude</h3><div><p>Prompts 64 to 70 were added here before the push.</p></div></section>
                 </div>
             </div>
 

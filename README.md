@@ -105,7 +105,7 @@ Only the name of the current season or red day (e.g. *Advent*, *Ordinary Time*, 
 - Uses the **viewer's local date**.
 - If the page is left open, it changes at local midnight with a **15-second fade that sweeps from right to left**:
   - the page underneath switches to the new season right away;
-  - on top lies a copy of the old season (its name and its dot), with a gradient mask (solid, then a soft edge 25% of the screen wide, then transparent);
+  - on top lies a copy of the old season (its name and its dot), with a gradient mask (solid, then a soft edge 25% of the screen wide, then transparent), moved by a CSS animation (`@keyframes sweep` in `style.css`);
   - the edge moves from the right side of the screen to past the left, so the old season fades out from the right and the new one shows through, then the copy is removed and the favicon changes;
   - with "reduce motion" turned on in the viewer's system settings, it simply switches.
 - On page load there is no fade; it simply shows today.
@@ -155,8 +155,7 @@ The season's key is set as a class on `<body>` (`advent`, `christmas`, `ordinary
   - every season and red day of the church year, continued to at least the end of the calendar year (so in the fall, the coming Advent and Christmas are listed too), e.g. "Advent ... Nov 30 – Dec 24"; Lent, the Triduum and Easter show their full length, and each red day is listed right after its season as "● Palm Sunday ... Mar 29"; the one being viewed is selected; choosing one goes to its first day (`?date=`)
   - a plain "----------------" divider, then "→ 2026–27": jumps to the next church year
   - "↓ Today": back to the real date
-- **Arrow keys**: ← / → go to the previous / next season or red day, the same steps the page takes at real midnights (Ordinary Time → Advent → Christmas → … → Palm Sunday → Lent → Triduum → Good Friday → Triduum → Easter → Pentecost → Ordinary Time). A label in the top left shows the date and season, and the address updates to `?date=` so a reload stays there.
-- **m**: midnight mode on/off. When on, ← / → play the 15-second midnight fade into each step.
+- **Arrow keys**: ← / → go to the previous / next season or red day, playing the 15-second midnight fade each time: the same steps the page takes at real midnights (Ordinary Time → Advent → Christmas → … → Palm Sunday → Lent → Triduum → Good Friday → Triduum → Easter → Pentecost → Ordinary Time). A label in the top left can show the date and season (turned off for now: set `SHOW_LABEL` to `true` in `script.js` to bring it back), and the address updates to `?date=` so a reload stays there.
 - **`?date=YYYY-MM-DD&next`**: shows that date, then after 5 seconds plays the 15-second midnight fade to the next day, e.g. `index.html?date=2026-11-28&next` (Ordinary Time → Advent).
 
 ## Favicon

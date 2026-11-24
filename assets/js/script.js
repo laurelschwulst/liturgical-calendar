@@ -10,14 +10,14 @@
                              to the next day, as it would at midnight
     the dot, top right       opens a dropdown of every season in the church
                              year; choosing one goes to its first day (?date=)
-    ← / →                    previous / next season or red day
-    m                        midnight mode: ← / → play the midnight fade
+    ← / →                    previous / next season or red day, with the
+                             midnight fade
 */
 
 $(function () {
 
   var FADE = 15 * 1000;            // length of the midnight fade
-  var BAND = 25;                   // width of the soft edge, % of the screen
+                                   // (the soft edge's width is in style.css)
   var ALL_KEYS = Object.keys(LiturgicalCalendar.NAMES).join(" ");
 
   var $body = $("body");
@@ -66,32 +66,19 @@ $(function () {
   }
 
   // the midnight fade: a copy of the old season (name and dot) lies over
-  // the page, and a gradient mask sweeps across it from right to left:
-  // solid on the left, a soft edge BAND% wide, transparent on the right.
-  // The edge moves from the right side of the screen to past the left,
-  // then the copy is removed and `done` runs (it updates the favicon).
+  // the page, and its mask (see .fade-layer in style.css) slides from right
+  // to left: solid, then a soft edge, then transparent. When the animation
+  // ends, the copy is removed and `done` runs (it updates the favicon).
   function fadeOut(oldKey, oldName, done) {
-    $(".fade-layer").remove();
+    $(".fade-layer").remove();   // a newer fade replaces an unfinished one
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
 
-    var layer = $('<div class="fade-layer">').addClass(oldKey)
+    $('<div class="fade-layer">').addClass(oldKey)
+      .css("animation-duration", FADE + "ms")
       .append($('<div class="time">').append($("<i>").text(oldName)))
       .append('<span class="dot"></span>')
-      .appendTo("body")[0];
-
-    var start = null;
-    function frame(now) {
-      if (start === null) start = now;
-      var p = Math.min((now - start) / FADE, 1);
-      var edge = 100 - p * (100 + BAND);           // 100% → -BAND%
-      var mask = "linear-gradient(to right, #000 " + edge + "%, transparent " + (edge + BAND) + "%)";
-      if (!layer.isConnected) return;               // replaced by a newer fade
-      layer.style.webkitMaskImage = mask;
-      layer.style.maskImage = mask;
-      if (p < 1) requestAnimationFrame(frame);
-      else { $(layer).remove(); done(); }
-    }
-    requestAnimationFrame(frame);
+      .on("animationend", function () { $(this).remove(); done(); })
+      .appendTo("body");
   }
 
   // favicon: a plain square in the season's background color. The color
@@ -259,10 +246,8 @@ $(function () {
   }
 
   // 3. testing with the keyboard
-  //    ← / →  go to the previous / next season or red day: the same steps
-  //           the page takes at real midnights
-  //    m      midnight mode on/off: when on, ← / → play the midnight fade
-  var midnightMode = false;
+  //    ← / →  go to the previous / next season or red day, playing the
+  //           midnight fade: the same steps the page takes at real midnights
   var $label = $("<div>").css({
     position: "fixed", top: "20px", left: "20px", zIndex: 4,
     padding: "4px 10px", borderRadius: "4px",
@@ -272,7 +257,12 @@ $(function () {
   }).appendTo("body");
   var labelTimer;
 
+  // the corner label for the arrow keys: turned off for now.
+  // Set to true to bring it back.
+  var SHOW_LABEL = false;
+
   function say(text) {
+    if (!SHOW_LABEL) return;
     $label.stop(true).css("opacity", 1).text(text).show();
     clearTimeout(labelTimer);
     labelTimer = setTimeout(function () { $label.fadeOut(400); }, 2500);
@@ -301,11 +291,6 @@ $(function () {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     var C = LiturgicalCalendar;
 
-    if (e.key === "m" || e.key === "M") {
-      midnightMode = !midnightMode;
-      say("Midnight mode " + (midnightMode ? "on: ← → play the fade" : "off"));
-      return;
-    }
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
     e.stopPropagation();   // never let the arrows change the dropdown itself
@@ -313,9 +298,9 @@ $(function () {
     var n = step(C.dayNumber(shown.year, shown.month, shown.day), e.key === "ArrowRight" ? 1 : -1);
     var date = C.toDate(n);
     browsing = true;
-    show(date, midnightMode);
+    show(date, true);
     history.replaceState(null, "", "?date=" + isoDate(n));
-    say(longDate(n) + " · " + C.seasonFor(date.year, date.month, date.day).name + (midnightMode ? " · midnight" : ""));
+    say(longDate(n) + " · " + C.seasonFor(date.year, date.month, date.day).name);
   }, true);   // capture phase, before the dropdown sees the key
 
 });

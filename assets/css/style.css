@@ -79,6 +79,23 @@ i, em {
   padding: 18px;         /* same as the body's margin, so the name lines up */
   overflow: hidden;
   pointer-events: none;  /* the real dot underneath stays clickable */
+
+  /* The mask is 2.5 screens wide: solid for the first screen, then a
+     soft edge a quarter of a screen wide, then transparent. Sliding it
+     left by 1.25 screens carries the soft edge from the right side of
+     the screen to past the left. The length is set by script.js. */
+  -webkit-mask-image: linear-gradient(to right, #000 40%, transparent 50%);
+  mask-image: linear-gradient(to right, #000 40%, transparent 50%);
+  -webkit-mask-size: 250% 100%;
+  mask-size: 250% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation: sweep 15s linear forwards;
+}
+
+@keyframes sweep {
+  from { -webkit-mask-position: 0% 0;      mask-position: 0% 0; }
+  to   { -webkit-mask-position: 83.333% 0; mask-position: 83.333% 0; }
 }
 
 /* a copy of the dot in the old season's color, in the same place */
